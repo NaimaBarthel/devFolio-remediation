@@ -37,10 +37,9 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String username = request.get("email");
         String password = request.get("password");
-
-        log.info("Login attempt for user: " + username);
-
-        log.debug("Password received: " + password);
+    //log à supprimer
+    //    log.info("Login attempt for user: " + username);
+    //    log.debug("Password received: " + password);
 
         Optional<User> userOpt = userRepository.findByEmail(username);
 

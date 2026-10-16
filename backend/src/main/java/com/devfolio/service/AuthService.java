@@ -22,8 +22,8 @@ public class AuthService {
 
     public User register(String email, String password) {
         String hashedPassword = md5Hash(password);
-
-        log.debug("Registering user: " + email + " with password: " + password);
+        //log à supprimer
+        //log.debug("Registering user: " + email + " with password: " + password);
 
         User user = new User();
         user.setEmail(email);
