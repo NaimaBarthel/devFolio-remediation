@@ -40,7 +40,7 @@ public class AuthController {
 
         log.info("Login attempt for user: " + username);
 
-        log.debug("Password received: " + password);
+
 
         Optional<User> userOpt = userRepository.findByEmail(username);
 

@@ -30,7 +30,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="bio" v-html="user.bio"></div>
+        <div class="bio">{{user.bio}}</div>
       </div>
     </div>
 
