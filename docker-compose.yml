@@ -5,8 +5,10 @@ services:
     ports:
       - "0.0.0.0:3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: devfolio
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./database:/docker-entrypoint-initdb.d
       - /var/lib/mysql:/var/lib/mysql
@@ -20,12 +22,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/devfolio
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      JWT_SECRET: secret123secret123secret123secret123
-      DEVFOLIO_ADMIN_PASSWORD: admin123
-      DEBUG: "true"
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      DEVFOLIO_ADMIN_PASSWORD: ${DEVFOLIO_ADMIN_PASSWORD}
+
+    
 
   frontend:
     build: ./frontend
@@ -34,3 +38,5 @@ services:
     depends_on:
       - backend
 
+volumes:
+      mariadb_data:
