@@ -31,10 +31,12 @@ public class SecurityConfig {
             }))
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/admin/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // Exiger une session/token valide pour accéder aux profils
+                .requestMatchers("/api/users/**").authenticated()
+                .anyRequest().authenticated()
             )
 
             .sessionManagement(session ->
