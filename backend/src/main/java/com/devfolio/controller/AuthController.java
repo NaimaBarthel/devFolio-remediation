@@ -4,12 +4,15 @@ import com.devfolio.model.User;
 import com.devfolio.repository.UserRepository;
 import com.devfolio.service.AuthService;
 import com.devfolio.service.JwtService;
+import com.devfolio.service.TokenBlacklistService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +35,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
@@ -70,10 +76,22 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("token", token, "user", user));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklistToken(token);
+            return ResponseEntity.ok(Map.of("message", "Déconnexion réussie et session invalidée"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("error", "Token manquant ou format invalide"));
+    }
+
     @PostMapping("/reset-password/request")
     public ResponseEntity<?> requestReset(@RequestParam String email) {
         String token = UUID.randomUUID().toString();
         String resetUrl = "http://localhost:5173/reset-password?token=" + token + "&email=" + email;
         return ResponseEntity.ok(Map.of("resetUrl", resetUrl));
     }
+
+    
 }
