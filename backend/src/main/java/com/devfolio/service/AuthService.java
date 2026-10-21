@@ -5,6 +5,7 @@ import com.devfolio.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -20,10 +21,11 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public User register(String email, String password) {
-        String hashedPassword = md5Hash(password);
-        //log à supprimer
-        //log.debug("Registering user: " + email + " with password: " + password);
+        String hashedPassword = passwordEncoder.encode(password);
 
         User user = new User();
         user.setEmail(email);
