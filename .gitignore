@@ -16,4 +16,4 @@ frontend/dist/
 .vscode/
 *.log
 .DS_Store
-.env
+#.env
