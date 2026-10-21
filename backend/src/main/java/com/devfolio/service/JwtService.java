@@ -1,6 +1,7 @@
 package com.devfolio.service;
 
 import com.devfolio.model.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,16 +10,18 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import javax.crypto.SecretKey;
 
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret:hardcoded-jwt-secret-do-not-use-change-in-env-32chars}")
+    @Value("${jwt.secret}")
     private String secret;
 
+    @Value("${jwt.expiration:86400000}")
+    private long expiration;
     @Value("${jwt.expiration:86400000}")
     private long expiration; // 24h par défaut (en millisecondes)
 
@@ -33,14 +36,18 @@ public class JwtService {
     public String generateToken(User user) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
-        
+
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("role", user.getRole())
                 .claim("userId", user.getId())
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey())
+                .setExpiration(new Date(now.getTime() + expiration))
+                .signWith(
+                        Keys.hmacShaKeyFor(
+                                secret.getBytes(StandardCharsets.UTF_8)
+                        )
+                )
                 .compact();
     }
 
@@ -52,10 +59,17 @@ public class JwtService {
         // Validation stricte : si la signature est invalide ou le token expiré,
         // le parser lève une exception et l'accès est immédiatement rejeté.
         return Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } 
+                .setSigningKey(
+                        Keys.hmacShaKeyFor(
+                                secret.getBytes(StandardCharsets.UTF_8)
+                        )
+                )
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
+    public String extractEmail(String token) {
+        return validateToken(token).getSubject();
+    }
+}

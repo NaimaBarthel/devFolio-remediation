@@ -1,8 +1,8 @@
 package com.devfolio.model;
 
-import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")

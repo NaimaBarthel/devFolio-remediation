@@ -18,34 +18,61 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtFilter
+    ) throws Exception {
+
         http
-            .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
 
-            .cors(cors -> cors.configurationSource(request -> {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of("*"));
-                config.setAllowedMethods(List.of("*"));
-                config.setAllowedHeaders(List.of("*"));
-                return config;
-            }))
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("*"));
+                    config.setAllowedMethods(List.of("*"));
+                    config.setAllowedHeaders(List.of("*"));
+                    return config;
+                }))
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // Exiger une session/token valide pour accéder aux profils
-                .requestMatchers("/api/users/**").authenticated()
-                .anyRequest().authenticated()
-            )
+                .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(
+                                jakarta.servlet.DispatcherType.ERROR
+                        ).permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").denyAll()
+                        // Exiger une session/token valide pour accéder aux profils
+                        .requestMatchers("/api/users/**").authenticated()
+                        .anyRequest().authenticated()
+                )
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, exception) ->
+                                response.sendError(401)
+                        )
+                        .accessDeniedHandler((request, response, exception) ->
+                                response.sendError(403)
+                        )
+                )
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                .addFilterBefore(
+                        jwtFilter,
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
 
+        var registration =
+                new org.springframework.boot.web.servlet.FilterRegistrationBean<>(jwtFilter);
+
+        registration.setEnabled(false);
+        return registration;
+    }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new PasswordEncoder() {

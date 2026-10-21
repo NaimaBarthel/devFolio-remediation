@@ -29,7 +29,7 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       DEVFOLIO_ADMIN_PASSWORD: ${DEVFOLIO_ADMIN_PASSWORD}
 
-    
+
 
   frontend:
     build: ./frontend
@@ -38,5 +38,3 @@ services:
     depends_on:
       - backend
 
-volumes:
-      mariadb_data:

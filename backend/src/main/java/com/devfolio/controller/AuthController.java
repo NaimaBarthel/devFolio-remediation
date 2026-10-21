@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,9 +42,10 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String username = request.get("email");
         String password = request.get("password");
-    //log à supprimer
-    //    log.info("Login attempt for user: " + username);
-    //    log.debug("Password received: " + password);
+
+        log.info("Login attempt for user: " + username);
+
+
 
         Optional<User> userOpt = userRepository.findByEmail(username);
 
@@ -92,6 +92,4 @@ public class AuthController {
         String resetUrl = "http://localhost:5173/reset-password?token=" + token + "&email=" + email;
         return ResponseEntity.ok(Map.of("resetUrl", resetUrl));
     }
-
-    
 }
